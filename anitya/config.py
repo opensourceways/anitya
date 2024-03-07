@@ -79,6 +79,8 @@ DEFAULTS = dict(
     SOCIAL_AUTH_LOGIN_URL="/login/",
     SOCIAL_AUTH_LOGIN_REDIRECT_URL="/",
     SOCIAL_AUTH_LOGIN_ERROR_URL="/login-error/",
+    SOCIAL_AUTH_GITHUB_KEY=None,
+    SOCIAL_AUTH_GITHUB_SECRET=None,
     DEFAULT_REGEX=r"(?i)%(name)s(?:[-_]?(?:minsrc|src|source))?[-_]([^-/_\s]+?(?:[-_]"
     r"(?:rc|devel|dev|alpha|beta)\d+)?)(?:[-_](?:minsrc|src|source|asc|release))?"
     r"\.(?:tar|t[bglx]z|tbz2|zip)",

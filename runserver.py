@@ -12,5 +12,8 @@ This is intended to be run with the Flask CLI for development purposes only::
 """
 
 from anitya.app import create
+from waitress import serve
 
-app = create()
+if __name__ == "__main__":
+    app = create()
+    serve(app, host="0.0.0.0", port=5000)

@@ -247,6 +247,8 @@ class Project(Base):
     backend = sa.Column(sa.String(200), default="custom")
     ecosystem_name = sa.Column(sa.String(200), nullable=False, index=True)
     version_url = sa.Column(sa.String(200), nullable=True)
+    architecture_url = sa.Column(sa.String(200), nullable=True)
+    tag = sa.Column(sa.String(200), nullable=True)
     regex = sa.Column(sa.String(200), nullable=True)
     version_prefix = sa.Column(sa.String(200), nullable=True)
     version_pattern = sa.Column(sa.String(200), nullable=True)
@@ -301,6 +303,15 @@ class Project(Base):
         """
         sorted_versions = self.get_sorted_version_objects()
         return [str(v) for v in sorted_versions]
+
+    @property
+    def architectures(self):
+        p_architectures = self.architectures_obj
+        architectures = []
+        for v in p_architectures:
+            architectures.extend(v.architecture.split(","))
+        
+        return ",".join(sorted(list(set(architectures))))
 
     @property
     def stable_versions(self):
@@ -693,6 +704,7 @@ class ProjectVersion(Base):
         primary_key=True,
     )
     version = sa.Column(sa.String(50), primary_key=True)
+    oe_version = sa.Column(sa.String(50), nullable=True)
     created_on = sa.Column(sa.DateTime, default=datetime.datetime.utcnow)
     commit_url = sa.Column(sa.String(200), nullable=True)
 
@@ -720,6 +732,37 @@ class ProjectVersion(Base):
         )
         return version.prerelease()
 
+class ProjectArchitecture(Base):
+    """
+    Models of version table representing version on project.
+
+    Attributes:
+        project_id (sa.Integer): Related project id.
+        version (sa.String): Raw version string as obtained from upstream.
+        created_on (sa.DateTime): When the version was created in Anitya.
+        commit_url (sa.String): URL to commit. Currently only used by GitHub backend.
+        project (sa.orm.relationship): Back reference to project.
+    """
+
+    __tablename__ = "projects_architectures"
+
+    project_id = sa.Column(
+        sa.Integer,
+        sa.ForeignKey("projects.id", ondelete="cascade", onupdate="cascade"),
+        primary_key=True,
+        unique=True,
+    )
+    architecture = sa.Column(sa.String(50), primary_key=True)
+
+    updated_on = sa.Column(
+        sa.DateTime,
+        server_default=sa.sql.functions.now(),
+        onupdate=sa.sql.functions.current_timestamp(),
+    )
+    created_on = sa.Column(sa.DateTime, default=datetime.datetime.utcnow)
+    project = sa.orm.relationship(
+        "Project", backref=sa.orm.backref("architectures_obj", cascade="all, delete-orphan")
+    )
 
 class ProjectFlag(Base):
     """Class ProjectFlag"""

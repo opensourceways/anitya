@@ -119,6 +119,7 @@ Werkzeug = "3.0.1"
 toml = "^0.10.2"
 webargs = "^8.2.0"
 WTForms = "^3.0.1"
+waitress = "^3.0.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.4"
