@@ -48,6 +48,7 @@ class Version(object):
         pattern: Optional[str] = None,
         cursor: Optional[str] = None,
         commit_url: Optional[str] = None,
+        oe_version: Optional[str] = None,
         pre_release_filter: Optional[str] = None,
     ):
         """
@@ -81,6 +82,7 @@ class Version(object):
             self.pattern = pattern.upper()
         self.cursor = cursor
         self.commit_url = commit_url
+        self.oe_version = oe_version
         if pre_release_filter:
             self.pre_release_filters = pre_release_filter.split(";")
         else:

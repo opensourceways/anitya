@@ -86,6 +86,10 @@ def create(config=None):
     app.add_url_rule(
         "/api/v2/versions/", view_func=versions_view, methods=["GET", "POST"]
     )
+    architectures_view = api_v2.ArchitecturesResource.as_view("apiv2.architectures")
+    app.add_url_rule(
+        "/api/v2/architectures/", view_func=architectures_view, methods=["GET", "POST"]
+    )
 
     # Register all the view blueprints
     app.register_blueprint(ui.ui_blueprint)

@@ -33,6 +33,7 @@ from . import exceptions, plugins
 
 _log = logging.getLogger(__name__)
 
+ARCHITECTURE_SUPPORT_BACKEND = ["Dockerhub"]
 
 def publish_message(topic, project=None, distro=None, message=None):  # pragma: no cover
     """Try to publish a message.
@@ -129,6 +130,7 @@ def check_project_release(project, session, test=False):
                         project_id=project.id,
                         version=version.version,
                         commit_url=version.commit_url,
+                        oe_version=version.oe_version,
                     )
                 )
                 upstream_versions.append(version.parse())
@@ -185,6 +187,81 @@ def check_project_release(project, session, test=False):
     session.add(project)
     session.commit()
 
+def check_project_architecture(project, session, test=False):
+    """Check if the provided project support architectures.
+
+    :arg package: a Package object has defined in anitya.db.modelss.Project
+
+    """
+    backend = plugins.get_plugin(project.backend)
+    if not backend:
+        raise exceptions.AnityaException(
+            f'No backend was found for "{project.backend}"'
+        )
+
+    if project.archived:
+        raise exceptions.AnityaException(
+            "Project is archived, can't check support architectures"
+        )
+    
+    if project.backend not in ARCHITECTURE_SUPPORT_BACKEND:
+        raise exceptions.AnityaException(
+            f'Backend "{project.backend}" not support architectures check'
+        )
+
+    try:
+        architectures = backend.get_architectures(project)
+        _log.debug("Architectures retrieved: '%s'", architectures)
+    except exceptions.RateLimitException as err:
+        _log.error("%s (%s): %s", project.name, project.backend, str(err))
+        raise
+    except exceptions.AnityaPluginException as err:
+        _log.error("%s (%s): %s", project.name, project.backend, str(err))
+        raise
+
+    p_architectures = project.architectures
+
+    if test:
+        session.close()
+        return architectures
+
+    if p_architectures != architectures:
+        project.architectures_obj.append(
+            models.ProjectArchitecture(
+                project_id=project.id,
+                architecture=architectures,
+            )
+        )
+
+        publish_message(
+            project=project.__json__(),
+            topic="project.architecture.update",
+            message=dict(
+                project=project.__json__(),
+                upstream_architectures=architectures,
+                old_architectures=p_architectures,
+                packages=[pkg.__json__() for pkg in project.packages],
+                ecosystem=project.ecosystem_name,
+                agent="anitya",
+                odd_change=False,
+            ),
+        )
+
+        publish_message(
+            project=project.__json__(),
+            topic="project.architecture.update.v2",
+            message=dict(
+                project=project.__json__(),
+                upstream_architectures=architectures,
+                old_architectures=p_architectures,
+                packages=[pkg.__json__() for pkg in project.packages],
+                ecosystem=project.ecosystem_name,
+                agent="anitya",
+            ),
+        )
+
+    session.add(project)
+    session.commit()
 
 def create_project(
     session,
@@ -202,6 +279,8 @@ def create_project(
     insecure=False,
     releases_only=False,
     dry_run=False,
+    architecture_url=None,
+    tag=None,
 ):
     """Create the project in the database."""
     project = models.Project(
@@ -217,6 +296,8 @@ def create_project(
         version_filter=version_filter,
         insecure=insecure,
         releases_only=releases_only,
+        architecture_url=architecture_url,
+        tag=tag,
     )
 
     session.add(project)
@@ -257,6 +338,8 @@ def edit_project(
     insecure,
     releases_only,
     user_id,
+    architecture_url,
+    tag,
     check_release=False,
     archived=False,
     dry_run=False,
@@ -326,6 +409,16 @@ def edit_project(
         old = project.archived
         project.archived = archived
         changes["archived"] = {"old": old, "new": project.archived}
+    if architecture_url != project.architecture_url:
+        old = project.architecture_url
+        project.architecture_url = architecture_url.strip() if architecture_url else None
+        if old != project.architecture_url:
+            changes["architecture_url"] = {"old": old, "new": project.architecture_url}
+    if tag != project.tag:
+        old = project.tag
+        project.tag = tag.strip() if tag else None
+        if old != project.tag:
+            changes["tag"] = {"old": old, "new": project.tag}
 
     try:
         if not dry_run:

@@ -20,6 +20,7 @@ from anitya import authentication
 from anitya.db import Session, models
 from anitya.lib import utilities
 from anitya.lib.exceptions import AnityaException, ProjectExists
+from anitya.lib.backends import http_session
 
 _log = logging.getLogger(__name__)
 
@@ -479,6 +480,7 @@ class ProjectsResource(MethodView):
             "homepage": fields.Str(required=True),
             "backend": fields.Str(required=True),
             "version_url": fields.Str(missing=None),
+            "architecture_url": fields.Str(missing=None),
             "version_scheme": fields.Str(missing="RPM"),
             "version_pattern": fields.Str(missing=None),
             "version_prefix": fields.Str(missing=None),
@@ -487,6 +489,7 @@ class ProjectsResource(MethodView):
             "regex": fields.Str(missing=None),
             "insecure": fields.Bool(missing=False),
             "check_release": fields.Bool(missing=False),
+            "tag": fields.Str(missing=None),
         }
         if not request.is_json:
             args = parser.parse(user_args, request, location="form")
@@ -508,6 +511,8 @@ class ProjectsResource(MethodView):
                 version_filter=args["version_filter"],
                 regex=args["regex"],
                 insecure=args["insecure"],
+                architecture_url=args["architecture_url"],
+                tag=args["tag"],
             )
             Session.commit()
             if args["check_release"]:
@@ -653,6 +658,8 @@ class VersionsResource(MethodView):
         :reqjson string backend: The project backend (github, folder, etc.).
         :reqjson string version_url: The URL to fetch when determining the
                                      project version.
+        :reqjson string architecture_url: The URL to fetch support arch. 
+                                          Only available for dockerhub.
         :reqjson string version_scheme: The project version scheme
                                         (defaults to "RPM" for temporary project).
         :reqjson string version_pattern: The version pattern for calendar version scheme.
@@ -687,6 +694,8 @@ class VersionsResource(MethodView):
             "homepage": fields.Str(),
             "backend": fields.Str(),
             "version_url": fields.Str(),
+            "architecture_url": fields.Str(),
+            "tag": fields.Str(),
             "version_scheme": fields.Str(),
             "version_pattern": fields.Str(),
             "version_prefix": fields.Str(),
@@ -775,6 +784,8 @@ class VersionsResource(MethodView):
                 homepage=homepage,
                 backend=backend,
                 version_url=version_url,
+                architecture_url=args.get("architecture_url"),
+                tag=args.get("tag"),
                 version_pattern=args.get("version_pattern"),
                 version_scheme=args.get("version_scheme"),
                 version_prefix=args.get("version_prefix"),
@@ -823,6 +834,12 @@ class VersionsResource(MethodView):
             releases_only = args.get("releases_only")
             if not releases_only:
                 releases_only = project.releases_only
+            architecture_url = args.get("architecture_url")
+            if not architecture_url:
+                architecture_url = project.architecture_url
+            tag = args.get("tag")
+            if not tag:
+                tag = project.tag
             try:
                 utilities.edit_project(
                     Session,
@@ -841,6 +858,8 @@ class VersionsResource(MethodView):
                     insecure=insecure,
                     releases_only=releases_only,
                     dry_run=dry_run,
+                    architecture_url=architecture_url,
+                    tag=tag,
                 )
             except AnityaException as err:
                 response = jsonify(str(err)), 500
@@ -863,5 +882,67 @@ class VersionsResource(MethodView):
                 "found_versions": versions,
                 "versions": project.versions,
                 "stable_versions": [str(v) for v in project.stable_versions],
+            }
+            return response
+
+class ArchitecturesResource(MethodView):
+    """
+    The ``api/v2/architectures/`` API endpoint.
+    """
+
+    def get(self):
+        user_args = {"project_id": fields.Int()}
+        args = parser.parse(user_args, request, location="query")
+        project_id = args.pop("project_id", -1)
+        project = models.Project.get(Session, project_id=project_id)
+        if not project:
+            response = {"output": "notok", "error": "No such project"}, 404
+            return response
+
+        response = {
+            "support_architectures": project.architectures,
+        }
+        return response
+
+    @authentication.require_token
+    def post(self):
+        user_args = {
+            "id": fields.Int(),
+            "dry_run": fields.Bool(missing=True),
+        }
+        if not request.is_json:
+            args = parser.parse(user_args, request, location="form")
+        else:
+            args = parser.parse(user_args, request, location="json")
+
+        project = None
+        dry_run = args.get("dry_run")
+
+        # If we have id, try to get the project
+        project_id = args.get("id")
+        if not project_id:
+            response = jsonify("Missing parameter id"), 400
+            return response
+        
+        project = models.Project.get(Session, project_id=project_id)
+        if not project:
+            response = jsonify("No such project"), 404
+            return response
+
+        if project:
+            try:
+                architectures = utilities.check_project_architecture(
+                    project, Session, test=dry_run
+                )
+            except AnityaException as err:
+                response = (
+                    jsonify("Error when checking for support architectures: " + str(err)),
+                    500,
+                )
+                return response
+
+            response = {
+                "support_architectures": project.architectures,
+                "found_architectures": architectures,
             }
             return response
