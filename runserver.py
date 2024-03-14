@@ -12,8 +12,9 @@ This is intended to be run with the Flask CLI for development purposes only::
 """
 
 from anitya.app import create
-from waitress import serve
+from gevent import pywsgi
 
 if __name__ == "__main__":
     app = create()
-    serve(app, host="0.0.0.0", port=5000)
+    server = pywsgi.WSGIServer(('0.0.0.0', 5000), app)
+    server.serve_forever()

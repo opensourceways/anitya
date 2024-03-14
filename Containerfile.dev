@@ -22,7 +22,7 @@ RUN dnf autoremove -y && dnf clean all -y
 COPY anitya ./anitya
 COPY ansible ./ansible
 COPY .container ./.container
-COPY mypy.cfg alembic.ini anitya.wsgi createdb.py pyproject.toml tox.ini README.rst poetry.lock .
+COPY mypy.cfg alembic.ini anitya.wsgi createdb.py pyproject.toml tox.ini README.rst poetry.lock updatedb.py runserver.py ./
 
 # Copy over configuration files
 RUN mkdir -p /etc/anitya
@@ -40,5 +40,6 @@ RUN pip install dist/*.whl
 # Hotfix for social_auth-sqlalchemy
 # Should be removed when we switch to something else
 RUN sed -i 's/base64.encodestring/base64.encodebytes/g' /usr/local/lib/python3.11/site-packages/social_sqlalchemy/storage.py
+RUN sed -i 's/hex.replace/str(hex).replace/g' /usr/lib64/python3.11/uuid.py
 
-CMD ["sh","-c", "poetry build && pip install dist/*.whl && eval '$START_COMMAND'"]
+CMD ["sh","-c", "poetry build && pip install dist/*.whl && eval '$BEFORE_COMMAND' && eval '$START_COMMAND'"]
