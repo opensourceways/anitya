@@ -68,7 +68,6 @@ class DockerhubBackend(BaseBackend):
             try:
                 req = BaseBackend.call_url(url, last_change=project.get_time_last_created_version(), insecure=project.insecure)
             except Exception as err:
-                url = None
                 _log.debug("%s ERROR: %s", project.name, str(err))
                 raise AnityaPluginException(
                     f'Could not call : "{url}" of "{project.name}", with error: {str(err)}'
@@ -86,7 +85,6 @@ class DockerhubBackend(BaseBackend):
                 for _, result in enumerate(response.get("results")):
                     upstream_versions.append(result.get("name"))
             except Exception as err:
-                url = None
                 _log.debug("%s ERROR: %s", project.name, str(err))
                 raise AnityaPluginException(
                     f"{project.name}: parse response json fail"

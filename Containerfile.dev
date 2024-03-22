@@ -14,6 +14,10 @@ RUN dnf install -y python3 python3-devel python3-psycopg2 poetry
 # Dependencies for tox
 RUN dnf install -y git python3-tox libpq libpq-devel gcc graphviz
 
+# Install docker
+RUN curl -fsSL https://test.docker.com -o test-docker.sh && \
+    sudo sh test-docker.sh
+
 # Install npm to manage javascript dependencies
 RUN dnf install -y npm
 
