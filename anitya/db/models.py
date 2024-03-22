@@ -498,6 +498,8 @@ class Project(Base):
                 time.mktime(self.updated_on.timetuple()) if self.updated_on else None
             ),
             ecosystem=self.ecosystem_name,
+            tag=self.tag,
+            architectures=self.architectures,
         )
         if detailed:
             output["packages"] = [pkg.__json__() for pkg in self.packages]
