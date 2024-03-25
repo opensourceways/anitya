@@ -118,7 +118,7 @@ def create(config=None):
         )
 
     # cors setting
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     return app
 
