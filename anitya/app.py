@@ -16,6 +16,7 @@ import logging.handlers
 
 import flask
 from flask_login import LoginManager, current_user, user_logged_in
+from flask_cors import CORS
 from social_core.backends.utils import load_backends
 from social_core.exceptions import AuthException
 from social_flask.routes import social_auth
@@ -115,6 +116,9 @@ def create(config=None):
                 mail_admin=app.config.get("ADMIN_EMAIL"),
             )
         )
+
+    # cors setting
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     return app
 
