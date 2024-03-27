@@ -15,6 +15,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 """wsgi"""
+import logging
+
+from flask import request
 from .app import create
 
+_log = logging.getLogger(__name__)
+
 application = create()
+
+@application.before_request
+def log_request_info():
+    _log.debug(
+        "Headers: %s", request.headers
+    )
+    _log.debug(
+        "Body: %s", request.get_data()
+    )
