@@ -3,6 +3,8 @@ FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION}
 
 WORKDIR /app
 
+ENV TZ=Asia/Shanghai
+
 # Package installation steps are separated so they
 # can be cached individually on Dockerfile changes
 
