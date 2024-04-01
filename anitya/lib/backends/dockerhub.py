@@ -123,8 +123,16 @@ class DockerhubBackend(BaseBackend):
 
     @classmethod
     def get_architecture_url(cls, project):
-        url = f"docker manifest inspect {project.architecture_url}"
+        versions_obj = project.stable_versions
+        if versions_obj:
+            latest_version = versions_obj[0]
+            check_version = latest_version.version + "-" + latest_version.oe_version
 
+
+        if project.architecture_url:
+            url = f"docker manifest inspect {project.architecture_url}:{check_version}"
+        else:
+            url = f"docker manifest inspect {project.version_url}:{check_version}"
         return url
 
     @classmethod

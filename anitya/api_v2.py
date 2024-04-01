@@ -597,6 +597,7 @@ class VersionsResource(MethodView):
             "latest_version": project.latest_version,
             "versions": project.versions,
             "stable_versions": [str(v) for v in project.stable_versions],
+            "raw_versions": [v.raw() for v in project.stable_versions],
         }
         return response
 
@@ -882,6 +883,7 @@ class VersionsResource(MethodView):
                 "found_versions": versions,
                 "versions": project.versions,
                 "stable_versions": [str(v) for v in project.stable_versions],
+                "raw_versions": [v.raw() for v in project.stable_versions],
             }
             return response
 

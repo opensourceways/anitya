@@ -426,6 +426,7 @@ class Project(Base):
         versions = [
             version_class(
                 version=v_obj.version,
+                oe_version=v_obj.oe_version,
                 prefix=self.version_prefix,
                 pre_release_filter=self.pre_release_filter,
                 created_on=v_obj.created_on,
@@ -500,6 +501,9 @@ class Project(Base):
             ecosystem=self.ecosystem_name,
             tag=self.tag,
             architectures=self.architectures,
+            logs=self.logs,
+            check_successful=self.check_successful,
+
         )
         if detailed:
             output["packages"] = [pkg.__json__() for pkg in self.packages]
