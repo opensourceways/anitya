@@ -491,7 +491,7 @@ class Project(Base):
             version_url=self.version_url,
             version=self.latest_version,
             versions=self.versions,
-            stable_versions=[str(v) for v in self.stable_versions],
+            raw_versions=[v.raw() for v in self.stable_versions],
             created_on=(
                 time.mktime(self.created_on.timetuple()) if self.created_on else None
             ),
