@@ -306,11 +306,12 @@ class Project(Base):
 
     @property
     def architectures(self):
+        """Return str of architectures stored"""
         p_architectures = self.architectures_obj
         architectures = []
         for v in p_architectures:
             architectures.extend(v.architecture.split(","))
-        
+
         return ",".join(sorted(list(set(architectures))))
 
     @property
@@ -503,7 +504,6 @@ class Project(Base):
             architectures=self.architectures,
             logs=self.logs,
             check_successful=self.check_successful,
-
         )
         if detailed:
             output["packages"] = [pkg.__json__() for pkg in self.packages]
@@ -738,6 +738,7 @@ class ProjectVersion(Base):
         )
         return version.prerelease()
 
+
 class ProjectArchitecture(Base):
     """
     Models of version table representing version on project.
@@ -767,8 +768,10 @@ class ProjectArchitecture(Base):
     )
     created_on = sa.Column(sa.DateTime, default=datetime.datetime.utcnow)
     project = sa.orm.relationship(
-        "Project", backref=sa.orm.backref("architectures_obj", cascade="all, delete-orphan")
+        "Project",
+        backref=sa.orm.backref("architectures_obj", cascade="all, delete-orphan"),
     )
+
 
 class ProjectFlag(Base):
     """Class ProjectFlag"""

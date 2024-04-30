@@ -1,15 +1,23 @@
-import logging
+# -*- coding: utf-8 -*-
+
+"""
+ See the Mulan PSL v2 for more details.
+"""
+
 import json
-import six
+import logging
 import re
 import subprocess
 
-from anitya.lib.backends import REGEX, BaseBackend, get_versions_by_regex
+import six
+
+from anitya.lib.backends import REGEX, BaseBackend
 from anitya.lib.exceptions import AnityaPluginException
 
 REGEX_ALIASES = {"DEFAULT": REGEX}
 
 _log = logging.getLogger(__name__)
+
 
 class DockerhubBackend(BaseBackend):
     """The docker class for project having a special hosting.
@@ -19,9 +27,7 @@ class DockerhubBackend(BaseBackend):
     """
 
     name = "Dockerhub"
-    examples = [
-        "https://hub.docker.com/r/openeuler/redis/tags"
-    ]
+    examples = ["https://hub.docker.com/r/openeuler/redis/tags"]
     more_info = (
         "More information in the <a href='"
         "/static/docs/user-guide.html#regular-expressions'> "
@@ -42,7 +48,10 @@ class DockerhubBackend(BaseBackend):
         Returns:
             str: url used for version checking
         """
-        url = f"https://hub.docker.com/v2/repositories/{project.version_url}/tags/?page_size=100&page=1&name&ordering"
+        url = (
+            f"https://hub.docker.com/v2/repositories/{project.version_url}/tags/?"
+            "page_size=100&page=1&name&ordering"
+        )
 
         return url
 
@@ -64,9 +73,13 @@ class DockerhubBackend(BaseBackend):
         url = cls.get_version_url(project)
 
         upstream_versions = []
-        while url: 
+        while url:
             try:
-                req = BaseBackend.call_url(url, last_change=project.get_time_last_created_version(), insecure=project.insecure)
+                req = BaseBackend.call_url(
+                    url,
+                    last_change=project.get_time_last_created_version(),
+                    insecure=project.insecure,
+                )
             except Exception as err:
                 _log.debug("%s ERROR: %s", project.name, str(err))
                 raise AnityaPluginException(
@@ -91,12 +104,10 @@ class DockerhubBackend(BaseBackend):
                 ) from err
 
         upstream_versions = list(set(upstream_versions))
-        upstream_versions = [v for v in upstream_versions if bool(re.search(r'\d', v))]
+        upstream_versions = [v for v in upstream_versions if bool(re.search(r"\d", v))]
 
         if len(upstream_versions) == 0:
-            raise AnityaPluginException(
-                f"{project.name}: no upstream version found"
-            )
+            raise AnityaPluginException(f"{project.name}: no upstream version found")
         # Filter retrieved versions
         filtered_versions = BaseBackend.filter_versions(
             upstream_versions, project.version_filter
@@ -123,11 +134,11 @@ class DockerhubBackend(BaseBackend):
 
     @classmethod
     def get_architecture_url(cls, project):
+        """get_architecture_url"""
         versions_obj = project.stable_versions
         if versions_obj:
             latest_version = versions_obj[0]
             check_version = latest_version.version + "-" + latest_version.oe_version
-
 
         if project.architecture_url:
             url = f"docker manifest inspect {project.architecture_url}:{check_version}"
@@ -137,16 +148,22 @@ class DockerhubBackend(BaseBackend):
 
     @classmethod
     def get_architectures(cls, project):
+        """get_architectures"""
         url = cls.get_architecture_url(project)
 
         support_architectures = []
         try:
-            res = subprocess.Popen(url, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            res = subprocess.Popen(
+                url, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
             for line in res.stdout.readlines():
                 line = line.decode("utf-8")
-                if "\"architecture\":" in line:
+                if '"architecture":' in line:
                     support_architectures.append(
-                        line.replace("\"architecture\":", "").replace("\"", "").replace(",", "").strip()
+                        line.replace('"architecture":', "")
+                        .replace('"', "")
+                        .replace(",", "")
+                        .strip()
                     )
         except Exception as err:
             _log.debug("%s ERROR: %s", project.name, str(err))

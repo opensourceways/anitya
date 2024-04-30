@@ -11,10 +11,11 @@ This is intended to be run with the Flask CLI for development purposes only::
     $ flask run --host 0.0.0.0 --port 5000
 """
 
-from anitya.app import create
 from gevent import pywsgi
+
+from anitya.app import create
 
 if __name__ == "__main__":
     app = create()
-    server = pywsgi.WSGIServer(('0.0.0.0', 5000), app)
+    server = pywsgi.WSGIServer(("0.0.0.0", 5000), app)
     server.serve_forever()

@@ -20,7 +20,6 @@ from anitya import authentication
 from anitya.db import Session, models
 from anitya.lib import utilities
 from anitya.lib.exceptions import AnityaException, ProjectExists
-from anitya.lib.backends import http_session
 
 _log = logging.getLogger(__name__)
 
@@ -659,7 +658,7 @@ class VersionsResource(MethodView):
         :reqjson string backend: The project backend (github, folder, etc.).
         :reqjson string version_url: The URL to fetch when determining the
                                      project version.
-        :reqjson string architecture_url: The URL to fetch support arch. 
+        :reqjson string architecture_url: The URL to fetch support arch.
                                           Only available for dockerhub.
         :reqjson string version_scheme: The project version scheme
                                         (defaults to "RPM" for temporary project).
@@ -887,12 +886,14 @@ class VersionsResource(MethodView):
             }
             return response
 
+
 class ArchitecturesResource(MethodView):
     """
     The ``api/v2/architectures/`` API endpoint.
     """
 
     def get(self):
+        """Lists all architectures on project."""
         user_args = {"project_id": fields.Int()}
         args = parser.parse(user_args, request, location="query")
         project_id = args.pop("project_id", -1)
@@ -908,6 +909,7 @@ class ArchitecturesResource(MethodView):
 
     @authentication.require_token
     def post(self):
+        """post update architectures on project."""
         user_args = {
             "id": fields.Int(),
             "dry_run": fields.Bool(missing=True),
@@ -925,7 +927,7 @@ class ArchitecturesResource(MethodView):
         if not project_id:
             response = jsonify("Missing parameter id"), 400
             return response
-        
+
         project = models.Project.get(Session, project_id=project_id)
         if not project:
             response = jsonify("No such project"), 404
@@ -938,7 +940,9 @@ class ArchitecturesResource(MethodView):
                 )
             except AnityaException as err:
                 response = (
-                    jsonify("Error when checking for support architectures: " + str(err)),
+                    jsonify(
+                        "Error when checking for support architectures: " + str(err)
+                    ),
                     500,
                 )
                 return response

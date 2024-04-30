@@ -35,6 +35,7 @@ _log = logging.getLogger(__name__)
 
 ARCHITECTURE_SUPPORT_BACKEND = ["Dockerhub"]
 
+
 def publish_message(topic, project=None, distro=None, message=None):  # pragma: no cover
     """Try to publish a message.
 
@@ -187,6 +188,7 @@ def check_project_release(project, session, test=False):
     session.add(project)
     session.commit()
 
+
 def check_project_architecture(project, session, test=False):
     """Check if the provided project support architectures.
 
@@ -203,7 +205,7 @@ def check_project_architecture(project, session, test=False):
         raise exceptions.AnityaException(
             "Project is archived, can't check support architectures"
         )
-    
+
     if project.backend not in ARCHITECTURE_SUPPORT_BACKEND:
         raise exceptions.AnityaException(
             f'Backend "{project.backend}" not support architectures check'
@@ -262,6 +264,7 @@ def check_project_architecture(project, session, test=False):
 
     session.add(project)
     session.commit()
+
 
 def create_project(
     session,
@@ -411,7 +414,9 @@ def edit_project(
         changes["archived"] = {"old": old, "new": project.archived}
     if architecture_url != project.architecture_url:
         old = project.architecture_url
-        project.architecture_url = architecture_url.strip() if architecture_url else None
+        project.architecture_url = (
+            architecture_url.strip() if architecture_url else None
+        )
         if old != project.architecture_url:
             changes["architecture_url"] = {"old": old, "new": project.architecture_url}
     if tag != project.tag:
