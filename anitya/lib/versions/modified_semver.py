@@ -34,6 +34,7 @@ from .base import Version
 from typing import Optional
 from datetime import datetime
 
+from anitya.lib.exceptions import InvalidVersion
 
 @functools.total_ordering
 class ModifiedSemanticVersion(Version):
@@ -54,6 +55,7 @@ class ModifiedSemanticVersion(Version):
         cursor: Optional[str] = None,
         commit_url: Optional[str] = None,
         pre_release_filter: Optional[str] = None,
+        oe_version: Optional[str] = None,
     ):
         """
         Constructor of Version class.
@@ -69,8 +71,11 @@ class ModifiedSemanticVersion(Version):
             pre_release_filter: A filter used to identify pre-release versions
         """
         super().__init__(
-            version, prefix, created_on, pattern, cursor, commit_url, pre_release_filter
+            version, prefix, created_on, pattern, cursor, commit_url, pre_release_filter, oe_version
         )
+
+        if self.oe_version:
+            return
 
         versions = version.split("-", 1)
 

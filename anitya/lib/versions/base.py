@@ -48,8 +48,8 @@ class Version(object):
         pattern: Optional[str] = None,
         cursor: Optional[str] = None,
         commit_url: Optional[str] = None,
-        oe_version: Optional[str] = None,
         pre_release_filter: Optional[str] = None,
+        oe_version: Optional[str] = None,
     ):
         """
         Constructor of Version class.
@@ -253,3 +253,9 @@ class Version(object):
         if not parsed_self or not parsed_other:
             return self.version.__eq__(other.version)
         return parsed_self.__eq__(parsed_other)
+
+    def raw(self):
+        if self.oe_version:
+            return self.version + "-" + self.oe_version
+        else:
+            return self.version

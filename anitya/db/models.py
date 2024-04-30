@@ -426,6 +426,7 @@ class Project(Base):
         versions = [
             version_class(
                 version=v_obj.version,
+                oe_version=v_obj.oe_version,
                 prefix=self.version_prefix,
                 pre_release_filter=self.pre_release_filter,
                 created_on=v_obj.created_on,
@@ -490,7 +491,7 @@ class Project(Base):
             version_url=self.version_url,
             version=self.latest_version,
             versions=self.versions,
-            stable_versions=[str(v) for v in self.stable_versions],
+            raw_versions=[v.raw() for v in self.stable_versions],
             created_on=(
                 time.mktime(self.created_on.timetuple()) if self.created_on else None
             ),
@@ -500,6 +501,9 @@ class Project(Base):
             ecosystem=self.ecosystem_name,
             tag=self.tag,
             architectures=self.architectures,
+            logs=self.logs,
+            check_successful=self.check_successful,
+
         )
         if detailed:
             output["packages"] = [pkg.__json__() for pkg in self.packages]
