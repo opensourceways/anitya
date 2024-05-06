@@ -255,6 +255,7 @@ class Version(object):
         return parsed_self.__eq__(parsed_other)
 
     def raw(self):
+        """raw for oe_version"""
         if self.oe_version:
             return self.version + "-" + self.oe_version
         else:

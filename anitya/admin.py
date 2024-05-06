@@ -181,6 +181,8 @@ def set_project_archive_state(project_id, state):
                     releases_only=project.releases_only,
                     archived=archive,
                     user_id=flask.g.user.username,
+                    architecture_url="",  # temporarily set to null
+                    tag="",
                 )
                 if bool(archive):
                     flask.flash(f"Project '{project.name}' archived")

@@ -10,7 +10,7 @@ services:
         FEDORA_VERSION: 38
     container_name: "anitya-web"
     ports:
-      - "127.0.0.1:5000:5000"
+      - "5000:5000"
     volumes:
       - ./anitya/:/app/anitya:z
       - ./docs/:/app/docs:z

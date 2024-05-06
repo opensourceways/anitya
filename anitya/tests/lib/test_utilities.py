@@ -156,6 +156,8 @@ class EditProjectTests(DatabaseTestCase):
                 regex=None,
                 insecure=False,
                 user_id="noreply@fedoraproject.org",
+                architecture_url="",
+                tag="",
                 releases_only=True,
                 archived=True,
             )
@@ -231,6 +233,8 @@ class EditProjectTests(DatabaseTestCase):
                 insecure=True,
                 user_id="noreply@fedoraproject.org",
                 releases_only=False,
+                architecture_url="",
+                tag="",
             )
 
         project_objs = models.Project.all(self.session)
@@ -260,6 +264,8 @@ class EditProjectTests(DatabaseTestCase):
             regex=project_objs[0].regex,
             insecure=False,
             user_id="noreply@fedoraproject.org",
+            architecture_url="",
+            tag="",
             releases_only=False,
             check_release=True,
         )
@@ -298,6 +304,8 @@ class EditProjectTests(DatabaseTestCase):
                 insecure=False,
                 user_id="noreply@fedoraproject.org",
                 releases_only=True,
+                architecture_url="",
+                tag="",
                 archived=True,
                 dry_run=True,
             )

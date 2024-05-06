@@ -630,6 +630,8 @@ def edit_project(project_id):
                 user_id=flask.g.user.username,
                 check_release=form.check_release.data,
                 releases_only=form.releases_only.data,
+                architecture_url="",
+                tag="",
             )
             if changes:
                 flask.flash("Project edited")

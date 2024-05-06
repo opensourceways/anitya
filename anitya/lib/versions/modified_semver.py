@@ -26,15 +26,14 @@ See `Semantic versioning`_.
    https://semver.org/
 """
 import functools
+import re
+from datetime import datetime
+from typing import Optional
 
 import semver
-import re
 
 from .base import Version
-from typing import Optional
-from datetime import datetime
 
-from anitya.lib.exceptions import InvalidVersion
 
 @functools.total_ordering
 class ModifiedSemanticVersion(Version):
@@ -71,17 +70,28 @@ class ModifiedSemanticVersion(Version):
             pre_release_filter: A filter used to identify pre-release versions
         """
         super().__init__(
-            version, prefix, created_on, pattern, cursor, commit_url, pre_release_filter, oe_version
+            version,
+            prefix,
+            created_on,
+            pattern,
+            cursor,
+            commit_url,
+            pre_release_filter,
+            oe_version,
         )
 
         if self.oe_version:
             return
 
-        versions = version.split("-", 1)
+        versions = []
+        if version is not None:
+            versions = version.split("-", 1)
 
         if len(versions) == 2:
             self.version = versions[0]
-            self.oe_version = versions[1] if bool(re.search(r'\d', versions[1])) else None
+            self.oe_version = (
+                versions[1] if bool(re.search(r"\d", versions[1])) else None
+            )
 
     def prerelease(self) -> bool:
         """
