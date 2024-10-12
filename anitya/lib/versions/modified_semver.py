@@ -83,15 +83,7 @@ class ModifiedSemanticVersion(Version):
         if self.oe_version:
             return
 
-        versions = []
-        if version is not None:
-            versions = version.split("-", 1)
-
-        if len(versions) == 2:
-            self.version = versions[0]
-            self.oe_version = (
-                versions[1] if bool(re.search(r"\d", versions[1])) else None
-            )
+        self.version = version
 
     def prerelease(self) -> bool:
         """
@@ -169,3 +161,13 @@ class ModifiedSemanticVersion(Version):
             return False
 
         return True
+
+    def parse(self):  
+        # 调用父类的parse方法获取处理后的版本字符串  
+        parsed_version = super().parse()  
+        act_ver = []
+        if parsed_version is not None:
+             act_ver = parsed_version.split("-",1)
+        if len(act_ver) > 1:
+            parsed_version = act_ver[0]
+        return parsed_version
